@@ -7,8 +7,8 @@ public class player_movenment_script : MonoBehaviour
 {
 
     private Rigidbody2D rb;
-    [SerializeField] private float speed = 2f;
-    [SerializeField] private float jump;
+    [SerializeField] private float movingSpeed = 2f;
+    [SerializeField] private float jumpForce;
     // Start is called before the first frame update
     void Start()
     {
@@ -18,13 +18,24 @@ public class player_movenment_script : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
-        float xDir = Input.GetAxis("Horizontal");
-        if (Input.GetButtonDown("Jump"))
-        {
-            rb.velocity = new Vector2(0, jump);
-        }
+        float xdir = Input.GetAxisRaw("Horizontal");
+        rb.velocity = new Vector2(xdir * movingSpeed, rb.velocity.y);
 
-        rb.velocity = new Vector2(xDir * speed, 0f);
+        if (Input.GetButtonDown("Jump"))
+
+        {
+
+            if (rb.velocity.y > 0.1f || rb.velocity.y < -0.1f)
+            {
+
+            }
+            else
+            {
+                rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+
+            }
+
+        }
 
     }
 }
