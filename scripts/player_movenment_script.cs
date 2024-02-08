@@ -31,7 +31,7 @@ public class player_movenment_script : MonoBehaviour
             }
             else
             {
-                rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+                rb.velocity = new Vector2(100, jumpForce);
 
             }
 
