@@ -2,11 +2,12 @@ using UnityEngine;
 using TMPro;
 using System.Linq;
 using UnityEditor;
+using System;
 
 public class PlayerController : MonoBehaviour
 {
-    public float jumpForce = 20f;
-    public int maxVisibleLines = 3;
+    public float jumpForce = 10f;
+    public float pushForce = 10f;
     public TMP_InputField inputField;
     public string str = "";
     private Rigidbody2D rb;
@@ -38,18 +39,6 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
 
-        // Calculate the number of lines
-        int numLines = inputField.text.Split('\n').Length;
-
-        // Check if the number of lines exceeds the maximum visible lines
-        if (numLines > maxVisibleLines)
-        {
-            // Find the index of the first newline character
-            int index = inputField.text.IndexOf('\n');
-
-            // Trim the text to keep only the latest input within the visible area
-            inputField.text = inputField.text.Substring(index + 1);
-        }
 
 
         for (char key = 'A'; key <= 'Z'; key++)
@@ -137,22 +126,34 @@ public class PlayerController : MonoBehaviour
 
         string[] cammands = str.Split("-");
 
-        if (str.StartsWith("FORCE"))
+        if (str.StartsWith("FRC"))
         {
 
 
-            if (float.TryParse(cammands[1], out float forceValue))
+            try
             {
-
-                if (float.TryParse(cammands[2], out float angleValue))
+                if (float.TryParse(cammands[1], out float forceValue))
                 {
 
+                    if (float.TryParse(cammands[2], out float angleValue))
+                    {
 
-                    terminal += "\n>>";
-                    inputField.text = terminal;
-                    ApplyForceAtAngle(forceValue, angleValue);
-                    str = "";
 
+                        terminal += "\n>>";
+                        inputField.text = terminal;
+                        ApplyForceAtAngle(forceValue, angleValue);
+                        str = "";
+
+                    }
+                    else
+                    {
+                        inputField.text += "\nERROR";
+
+                        terminal += "\nERROR\n>>";
+                        inputField.text = terminal;
+                        str = "";
+
+                    }
                 }
                 else
                 {
@@ -161,17 +162,47 @@ public class PlayerController : MonoBehaviour
                     terminal += "\nERROR\n>>";
                     inputField.text = terminal;
                     str = "";
-
                 }
             }
-            else
+            catch (Exception)
             {
+
                 inputField.text += "\nERROR";
 
                 terminal += "\nERROR\n>>";
                 inputField.text = terminal;
                 str = "";
+
             }
+
+
+        }
+
+        else if (str == "FWD")
+        {
+            terminal += "\n>>";
+            inputField.text = terminal;
+            forward();
+            str = "";
+
+        }
+
+        else if (str == "BKW")
+        {
+            terminal += "\n>>";
+            inputField.text = terminal;
+            backward();
+            str = "";
+
+        }
+
+        else if (str == "JMP")
+        {
+            terminal += "\n>>";
+            inputField.text = terminal;
+            Jump();
+            str = "";
+
         }
 
         else
@@ -210,7 +241,7 @@ public class PlayerController : MonoBehaviour
 
     void forward()
     {
-        rb.velocity = new Vector2(jumpForce, rb.velocity.y);
+        rb.velocity = new Vector2(pushForce, rb.velocity.y);
 
         inputField.ActivateInputField();
 
@@ -220,7 +251,7 @@ public class PlayerController : MonoBehaviour
 
     void backward()
     {
-        rb.velocity = new Vector2(-jumpForce, rb.velocity.y);
+        rb.velocity = new Vector2(-pushForce, rb.velocity.y);
 
         inputField.ActivateInputField();
 
