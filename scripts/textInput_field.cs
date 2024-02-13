@@ -1,99 +1,209 @@
 using UnityEngine;
 using TMPro;
+using System.Linq;
+using UnityEditor;
 
 public class PlayerController : MonoBehaviour
 {
     public float jumpForce = 20f;
+    public int maxVisibleLines = 3;
     public TMP_InputField inputField;
-    public string str="";
+    public string str = "";
     private Rigidbody2D rb;
-public string terminal="";
+    public string terminal = "";
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-  if (inputField != null)
-    {
-        if (inputField.placeholder != null)
+        if (inputField != null)
         {
-            inputField.placeholder.GetComponent<TextMeshProUGUI>().color = Color.gray;
+            if (inputField.placeholder != null)
+            {
+                inputField.placeholder.GetComponent<TextMeshProUGUI>().color = Color.gray;
+            }
+            if (inputField.textComponent != null)
+            {
+                inputField.textComponent.color = Color.white;
+            }
+
+            inputField.text = "$GDSCBallGame>>";
+            terminal = "$GDSCBallGame>>";
+            inputField.onEndEdit.AddListener(OnInputEndEdit);
+            inputField.Select();
+            inputField.ActivateInputField();
+
+            inputField.selectionAnchorPosition = terminal.Length;
+            inputField.selectionFocusPosition = terminal.Length;
         }
-        if (inputField.textComponent != null)
+    }
+    void Update()
+    {
+
+        // Calculate the number of lines
+        int numLines = inputField.text.Split('\n').Length;
+
+        // Check if the number of lines exceeds the maximum visible lines
+        if (numLines > maxVisibleLines)
         {
-            inputField.textComponent.color = Color.white;
+            // Find the index of the first newline character
+            int index = inputField.text.IndexOf('\n');
+
+            // Trim the text to keep only the latest input within the visible area
+            inputField.text = inputField.text.Substring(index + 1);
         }
 
-        inputField.text = "$GDSCBallGame>>";
-        terminal="$GDSCBallGame>>";
-        inputField.onEndEdit.AddListener(OnInputEndEdit);
-             inputField.Select();
-        inputField.ActivateInputField();
- 
-        inputField.selectionAnchorPosition =terminal.Length;
-        inputField.selectionFocusPosition =terminal.Length;
-    }
-    }
-void Update()
-    {
+
         for (char key = 'A'; key <= 'Z'; key++)
         {
             KeyCode keyCode = (KeyCode)System.Enum.Parse(typeof(KeyCode), key.ToString());
             if (Input.GetKeyDown(keyCode))
             {
                 str += key.ToString().ToUpper();
-                terminal+=key.ToString().ToUpper();
-  
+                terminal += key.ToString().ToUpper();
+
                 Debug.Log("Key pressed: " + key + ". Current str: " + str);
             }
-        if (inputField != null)
-                
-                inputField.text=terminal;}
+            if (inputField != null)
+
+                inputField.text = terminal;
         }
+
+        if (Input.GetKeyDown(KeyCode.Minus))
+        {
+
+            str += "-";
+            terminal += "-";
+
+        }
+
+        for (char key = '0'; key <= '9'; key++)
+        {
+            KeyCode keyCode = (KeyCode)System.Enum.Parse(typeof(KeyCode), "Alpha" + key);
+            if (Input.GetKeyDown(keyCode))
+            {
+                str += key;
+                terminal += key;
+
+                Debug.Log("Key pressed: " + key + ". Current str: " + str);
+
+            }
+        }
+    }
     void OnInputEndEdit(string input)
     {
 
-            if (str.EndsWith("JUMP"))
+        string prefix = "$GDSCBallGame>>";
+
+        if (str.StartsWith(prefix))
+        {
+            str = str[prefix.Length..];
+        }
+
+        // if (str == "JUMP")
+        // {
+        //     terminal += "\n>>";
+        //     inputField.text = terminal;
+        //     Jump();
+        //     str = "";
+
+        // }
+        // else if (str == "FORWARD")
+        // {
+        //     terminal += "\n>>";
+        //     inputField.text = terminal;
+        //     forward();
+        //     str = "";
+
+
+        // }
+        // else if (str == "BACKWARD")
+        // {
+        //     terminal += "\n>>";
+        //     inputField.text = terminal;
+        //     backward();
+        //     str = "";
+
+
+        // }
+        // else
+        // {
+        //     inputField.text += "\nERROR";
+
+        //     terminal += "\nERROR\n>>";
+        //     inputField.text = terminal;
+        //     str = "";
+
+
+        // }
+
+        string[] cammands = str.Split("-");
+
+        if (str.StartsWith("FORCE"))
+        {
+
+
+            if (float.TryParse(cammands[1], out float forceValue))
             {
-                terminal+="\n>>";
-                inputField.text=terminal;
-                Jump();
-                str="";
 
+                if (float.TryParse(cammands[2], out float angleValue))
+                {
+
+
+                    terminal += "\n>>";
+                    inputField.text = terminal;
+                    ApplyForceAtAngle(forceValue, angleValue);
+                    str = "";
+
+                }
+                else
+                {
+                    inputField.text += "\nERROR";
+
+                    terminal += "\nERROR\n>>";
+                    inputField.text = terminal;
+                    str = "";
+
+                }
             }
-            else if (str.EndsWith ("FORWARD"))
+            else
             {
-                terminal+="\n>>";
-                inputField.text=terminal;
-                forward();
-                str="";
+                inputField.text += "\nERROR";
 
-
+                terminal += "\nERROR\n>>";
+                inputField.text = terminal;
+                str = "";
             }
-            else if (str.EndsWith( "BACKWARD"))
-            {
-                terminal+="\n>>";
-                inputField.text=terminal;
-                backward();
-                str="";
+        }
 
+        else
+        {
 
-            }
-            else{
-                inputField.text+="\nERROR";
-               
-                terminal+="\nERROR\n>>";
-                inputField.text=terminal;
-                str="";
+            inputField.text += "\nERROR";
 
+            terminal += "\nERROR\n>>";
+            inputField.text = terminal;
+            str = "";
+        }
 
-            }
-        
+    }
+
+    void ApplyForceAtAngle(float forceMagnitude, float angleDegrees)
+    {
+        // Convert the angle from degrees to radians
+        float angleRadians = angleDegrees * Mathf.Deg2Rad;
+
+        // Calculate the force components using trigonometry
+        float forceX = forceMagnitude * Mathf.Cos(angleRadians);
+        float forceY = forceMagnitude * Mathf.Sin(angleRadians);
+
+        // Apply the force to the Rigidbody
+        rb.AddForce(new Vector2(forceX, forceY), ForceMode2D.Impulse);
     }
 
     void Jump()
     {
         rb.velocity = new Vector2(jumpForce, jumpForce);
         inputField.ActivateInputField();
-  
+
         inputField.selectionAnchorPosition = terminal.Length;
         inputField.selectionFocusPosition = terminal.Length;
     }
@@ -101,11 +211,11 @@ void Update()
     void forward()
     {
         rb.velocity = new Vector2(jumpForce, rb.velocity.y);
-            
+
         inputField.ActivateInputField();
 
-        inputField.selectionAnchorPosition =terminal.Length;
-        inputField.selectionFocusPosition =terminal.Length;
+        inputField.selectionAnchorPosition = terminal.Length;
+        inputField.selectionFocusPosition = terminal.Length;
     }
 
     void backward()
@@ -114,7 +224,7 @@ void Update()
 
         inputField.ActivateInputField();
 
-        inputField.selectionAnchorPosition = terminal.Length+2;
-        inputField.selectionFocusPosition = terminal.Length+2;
+        inputField.selectionAnchorPosition = terminal.Length + 2;
+        inputField.selectionFocusPosition = terminal.Length + 2;
     }
 }
