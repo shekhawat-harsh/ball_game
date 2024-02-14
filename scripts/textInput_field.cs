@@ -193,6 +193,15 @@ public class PlayerController : MonoBehaviour
 
         }
 
+        else if (str == "S")
+        {
+            terminal += "\n>>";
+            inputField.text = terminal;
+            stop();
+            str = "";
+
+        }
+
         else if (str == "FWD")
         {
             terminal += "\n>>";
@@ -272,6 +281,13 @@ public class PlayerController : MonoBehaviour
 
         inputField.selectionAnchorPosition = terminal.Length + 2;
         inputField.selectionFocusPosition = terminal.Length + 2;
+    }
+
+    void stop()
+    {
+
+        rb.velocity = new Vector2(0, 0);
+
     }
 
 
