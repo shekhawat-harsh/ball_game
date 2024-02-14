@@ -6,6 +6,9 @@ using System;
 
 public class PlayerController : MonoBehaviour
 {
+
+    private int lines = 1;
+    public int maxLines = 7;
     public float jumpForce = 10f;
     public float pushForce = 10f;
     public TMP_InputField inputField;
@@ -38,6 +41,14 @@ public class PlayerController : MonoBehaviour
     }
     void Update()
     {
+        Debug.Log("terminal" + terminal);
+
+        if (lines - 2 > maxLines)
+        {
+            inputField.text = "$GDSCBallGame>>";
+            terminal = "$GDSCBallGame>>";
+            lines = 1;
+        }
 
 
 
@@ -77,8 +88,12 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
+
+
+
     void OnInputEndEdit(string input)
     {
+        lines++;
 
         string prefix = "$GDSCBallGame>>";
 
@@ -258,4 +273,6 @@ public class PlayerController : MonoBehaviour
         inputField.selectionAnchorPosition = terminal.Length + 2;
         inputField.selectionFocusPosition = terminal.Length + 2;
     }
+
+
 }
